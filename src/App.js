@@ -3,6 +3,8 @@ import { Route, Switch, Link } from 'react-router-dom';
 import HomePage from './pages/homepages/homepage.component';
 import ShopPage from './pages/shop/shop.component';
 import Header from './components/header/header.component';
+import SingInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up.component';
+import { auth } from './firebase/firebase.util';
 
 import './App.css';
 
@@ -27,13 +29,37 @@ const HatsPage = (props) => {
 // };
 
 class App extends React.Component {
+  constructor(){
+    super();
+
+    this.state = {
+      currentUser: null
+    }
+  }
+
+  unsubcribeFromAuth = null;
+
+  componentDidMount(){
+    this.unsubcribeFromAuth = auth.onAuthStateChanged( user => {
+      this.setState({ currentUser: user });
+
+      console.log('onAuthStateChanged: ',user );
+    })
+  }
+
+  componentWillUnmount(){
+    this.unsubcribeFromAuth();
+    console.log('componentWillUnmount')
+  }  
   render() {
     return (
       <div className="App">
-        <Header />
+        <Header currentUser={this.state.currentUser} />
+
         <Switch>
           <Route exact path="/" component={HomePage} />
-          <Route exact path="/shop" component={ShopPage} />
+          <Route  path="/shop" component={ShopPage} />
+          <Route  path="/signin" component={SingInAndSignUpPage} />
           {/* <Route path="/hats/:id" component={HatsPageDetail} /> */}
         </Switch>
       </div>

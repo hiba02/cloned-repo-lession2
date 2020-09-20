@@ -4,7 +4,7 @@ import HomePage from './pages/homepages/homepage.component';
 import ShopPage from './pages/shop/shop.component';
 import Header from './components/header/header.component';
 import SingInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up.component';
-import { auth } from './firebase/firebase.util';
+import { auth, createUserProfileDocument } from './firebase/firebase.util';
 
 import './App.css';
 
@@ -40,10 +40,28 @@ class App extends React.Component {
   unsubcribeFromAuth = null;
 
   componentDidMount(){
-    this.unsubcribeFromAuth = auth.onAuthStateChanged( user => {
-      this.setState({ currentUser: user });
+    this.unsubcribeFromAuth = auth.onAuthStateChanged(async userAuth => {
+      // this.setState({ currentUser: user });
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth);
 
-      console.log('onAuthStateChanged: ',user );
+        //snapShot object 
+        userRef.onSnapshot(snapShot => {
+          // console.log('snapShot.data(): ',snapShot.data());
+          this.setState({
+            currentUser: {
+              id: snapShot.id,
+              ...snapShot.data()
+            }
+          }, ()=>{ console.log('this.state:',this.state);  })
+        });
+ 
+      //  console.log('this.state:',this.state);
+      } else {
+        this.setState({currentUser: userAuth});
+      }
+      // createUserProfileDocument(user)
+      // console.log('onAuthStateChanged:',user );
     })
   }
 
